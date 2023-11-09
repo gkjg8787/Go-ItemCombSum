@@ -11,7 +11,7 @@ func main(){
 		fmt.Println("")
 		return
 	}
-	storeconf := itemcomb.ParseMapAny(os.Args[1])
+	storeconf := itemcomb.ParseStoreConf(os.Args[1])
 	itemlist := itemcomb.ParseItemList(os.Args[2])
 	outf := "json"
 	result := itemcomb.SearchComb(storeconf, itemlist, outf)
