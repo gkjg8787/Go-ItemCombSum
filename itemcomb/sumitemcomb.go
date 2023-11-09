@@ -234,12 +234,6 @@ func SaitekiPrice(itemlist []SelectItem,
 	return result
 }
 
-func startItemComb(storeconf StoreConfType,
-				   itemlist []SelectItem,
-				   ) MakeCombResult {
-	return SaitekiPrice(itemlist, storeconf)
-}
-
 func getTextResult(outf string, res MakeCombResult) string{
 	if outf == "json" {
 		j, err := json.Marshal(res.GetResult())
@@ -254,6 +248,6 @@ func SearchComb(storeconf StoreConfType,
 				itemlist []SelectItem,
 				outf  string,
 				) string{
-	res := startItemComb(storeconf, itemlist)
+	res := SaitekiPrice(itemlist, storeconf)
 	return getTextResult(outf, res)
 }

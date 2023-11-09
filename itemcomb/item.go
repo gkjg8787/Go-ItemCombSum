@@ -59,12 +59,15 @@ func (s *SumItem) CreateSums(){
 	s.sums = map[string]map[string]int{}
 	SMK := CreateSumItemKey()
 	for _, item := range s.items {
-		if _, ok := s.sums[item.Name]; !ok {
-			s.sums[item.Name] = map[string]int{SMK.Sum:0, SMK.Postage:0}
+		if _, ok := s.sums[item.Storename]; !ok {
+			s.sums[item.Storename] = map[string]int{SMK.Sum:0, SMK.Postage:0}
 		}
-		s.sums[item.Name][SMK.Sum] += item.Price
+		s.sums[item.Storename][SMK.Sum] += item.Price
 	}
 	for _, store := range s.stores {
+		if len(s.sums[store.name]) == 0 {
+			s.sums[store.name] = map[string]int{}
+		}
 		s.sums[store.name][SMK.Postage] = store.GetPostage(s.sums[store.name][SMK.Sum])
 	}
 }
@@ -94,6 +97,7 @@ func (s *SumItem) GetResult() SumItemResult {
 	for storename, value := range s.sums {
 		sumPostage += value[SMK.Postage]
 		ssr := StoreSumResult{
+			StoreName : storename,
 			Postage : value[SMK.Postage],
 			SumPosOut : value[SMK.Sum],
 			Items : []ItemResult{},
@@ -120,6 +124,7 @@ type SumItemResult struct {
 	StoreSums  []StoreSumResult `json:"storesums"`
 }
 type StoreSumResult struct {
+	StoreName string `json:"storename"`
 	Postage  int `json:"postage"`
 	SumPosOut  int `json:"sumposout"`
 	Items  []ItemResult `json:"items"`

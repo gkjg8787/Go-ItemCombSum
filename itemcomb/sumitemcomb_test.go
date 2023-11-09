@@ -195,3 +195,49 @@ func equalSelectItemList(want []SelectItem, ret []SelectItem) bool {
 	}
 	return true
 }
+
+func Test_SearchComb(t *testing.T){
+	tests := []struct {
+        name   string
+		storeconfjson string
+        itemliststr string
+        want   string
+	}{
+		{
+			"テスト1",
+			`{
+				"静岡本店": [
+					{ "boundary": "0<=","postage":"300" }
+				],
+				"駿河屋": [
+					{"boundary": "1000>", "postage":"440"},
+					{"boundary": "1000<=:1500>", "postage":"385"},
+					{"boundary": "5000>", "postage":"240" }
+				]
+			}`,
+			`[
+				{"itemname":"ラピュタ", "storename":"駿河屋", "price":1200},
+				{"itemname":"ラピュタ", "storename":"静岡本店", "price":1100},
+				{"itemname":"ナウシカ", "storename":"静岡本店", "price":800},
+				{"itemname":"ナウシカ", "storename":"駿河屋", "price":900}
+			]`,
+			`{"errormsg":"","sumposin":2200,"sumpostage":300,"storesums":[{"storename":"静岡本店","postage":300,"sumposout":1900,"items":[{"itemname":"ラピュタ","price":1100},{"itemname":"ナウシカ","price":800}]}]}`,
+		},
+	}
+	outf := "json"
+	for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+			storeconf, ok := ParseStoreConf(tt.storeconfjson)
+			if !ok {
+				t.Errorf("not ok storeconfjson = %v", tt.storeconfjson)
+			}
+			itemlist, ok := ParseItemList(tt.itemliststr)
+			if !ok {
+				t.Errorf("not ok itemliststr = %v", tt.itemliststr)
+			}
+			if r := SearchComb(storeconf, itemlist, outf); r != tt.want {
+				t.Errorf("SearchComb() = %v, want %v", r, tt.want)
+			}
+        })
+	}
+}
