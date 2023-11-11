@@ -183,7 +183,11 @@ func makeComb(itemlist [][]int) ([][]int){
 		return make([][]int,0, 0)
 	}
 	if len(itemlist) == 1 {
-		return itemlist
+		result := [][]int{}
+		for _, i := range itemlist[0] {
+			result = append(result, []int{i})
+		}
+		return result
 	}
 	cur_res := ary_comb(itemlist[0], itemlist[1])
 	if len(itemlist) == 2 {
