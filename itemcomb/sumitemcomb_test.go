@@ -4,6 +4,7 @@ import (
 	"testing"
 	"reflect"
 	"fmt"
+	"encoding/json"
 )
 func Test_createStoreCatalog(t *testing.T){
 	tests := []struct {
@@ -235,9 +236,81 @@ func Test_SearchComb(t *testing.T){
 			if !ok {
 				t.Errorf("not ok itemliststr = %v", tt.itemliststr)
 			}
-			if r := SearchComb(storeconf, itemlist, outf); r != tt.want {
+			if r := SearchComb(storeconf, itemlist, outf); !equalSearchCombResult(tt.want, r) {
 				t.Errorf("SearchComb() = %v, want %v", r, tt.want)
 			}
         })
 	}
+}
+func equalSearchCombResult(want string, ret string) bool {
+	ww,ok := marshalSearchCombResult(want)
+	if !ok {
+		fmt.Printf("fault marshal  want=%v\n", want)
+		return false
+	}
+	rr,ok := marshalSearchCombResult(ret)
+	if !ok {
+		fmt.Printf("fault marshal ret=%v\n", ret)
+		return false
+	}
+	if ww.Errormsg != rr.Errormsg {
+		fmt.Printf("not equal Errormsg w=%v, r=%v\n", ww.Errormsg, rr.Errormsg)
+		return false
+	}
+	if ww.SumPosIn != rr.SumPosIn {
+		fmt.Printf("not equal SumPosIn w=%v, r=%v\n", ww.SumPosIn, rr.SumPosIn)
+		return false
+	}
+	if ww.SumPostage != rr.SumPostage {
+		fmt.Printf("not equal SumPostage w=%v, r=%v\n", ww.SumPostage, rr.SumPostage)
+		return false
+	}
+	for _, ws := range ww.StoreSums {
+		iseq := false
+		for _,rs := range rr.StoreSums {
+			if ws.StoreName != rs.StoreName {
+				continue
+			}
+			if ws.Postage != rs.Postage {
+				fmt.Printf("not equal Postage storename=%v, w=%v, r=%v\n", ws.StoreName, ws.Postage, rs.Postage)
+				return false
+			}
+			if ws.SumPosOut != rs.SumPosOut {
+				fmt.Printf("not equal SumPosOut storename=%v, w=%v, r=%v\n", ws.StoreName, ws.SumPosOut, rs.SumPosOut)
+				return false
+			}
+			if !equalItemResults(ws.Items, rs.Items) {
+				fmt.Printf("not equal Items\n")
+				return false
+			}
+			iseq = true
+		}
+		if !iseq {
+			fmt.Printf("not found storename of StoreSums w=%v\n", ws)
+			return false
+		}
+	}
+	return true
+}
+func equalItemResults(w []ItemResult, r []ItemResult) bool {
+	for _, ww := range w {
+		for _, rr := range r {
+			if ww.ItemName != rr.ItemName {
+				continue
+			}
+			if ww.Price != rr.Price {
+				fmt.Printf("not equal Price ItemName=%v, w=%v, r=%v\n", ww.ItemName, ww.Price, rr.Price)
+				return false
+			}
+		}
+	}
+	return true
+}
+func marshalSearchCombResult(a string) (SumItemResult, bool){
+	var s SumItemResult
+	if err := json.Unmarshal([]byte(a), &s); err != nil {
+		fmt.Println("encoding error ", err)
+		return SumItemResult{},false
+	}
+	return s, true
 }
