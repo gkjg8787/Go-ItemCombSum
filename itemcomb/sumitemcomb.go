@@ -119,7 +119,7 @@ func removeHighPriceItem(stca []Store,
 			if !ok {
 				continue
 			}
-			sump := itemlist[i].Price + s.GetPostage(itemlist[i].Price)
+			sump := itemlist[i].Price.Int() + s.GetPostage(itemlist[i].Price.Int())
 			if minv == -1 || minv > sump {
 				minv = sump
 				minidx = i
@@ -135,7 +135,7 @@ func removeHighPriceItem(stca []Store,
 				ary = append(ary, ptn)
 				continue
 			}
-			if posin_mingrp[i].mval + MarginPrice >= itemlist[ptn].Price {
+			if posin_mingrp[i].mval + MarginPrice >= itemlist[ptn].Price.Int() {
 				ary = append(ary, ptn)
 			}
 		}

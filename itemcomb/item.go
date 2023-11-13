@@ -1,5 +1,8 @@
 package itemcomb
 
+import (
+	"encoding/json"
+)
 
 
 type SumItemKey struct {
@@ -62,7 +65,7 @@ func (s *SumItem) CreateSums(){
 		if _, ok := s.sums[item.Storename]; !ok {
 			s.sums[item.Storename] = map[string]int{SMK.Sum:0, SMK.Postage:0}
 		}
-		s.sums[item.Storename][SMK.Sum] += item.Price
+		s.sums[item.Storename][SMK.Sum] += item.Price.Int()
 	}
 	for _, store := range s.stores {
 		if len(s.sums[store.name]) == 0 {
@@ -108,7 +111,7 @@ func (s *SumItem) GetResult() SumItemResult {
 			}
 			ir := ItemResult{
 				ItemName : item.Name,
-				Price : item.Price,
+				Price : item.Price.Int(),
 			}
 			ssr.Items = append(ssr.Items, ir)
 		}
@@ -245,8 +248,25 @@ func (ro *SingleStoreOperator) Equal(sp any) bool{
 	return true
 }
 
+type PriceNumber int64
+
+func (p *PriceNumber) Int() int {
+	return int(*p)
+}
 type SelectItem struct {
 	Name string `json:"itemname"`
 	Storename string `json:"storename"`
-	Price int	`json:"price"`
+	Price PriceNumber	`json:"price"`
+}
+func (m *PriceNumber) UnmarshalJSON(b []byte) error {
+    var number json.Number
+    if err := json.Unmarshal(b, &number); err != nil {
+        return err
+    }
+    i, err := number.Int64()
+    if err != nil {
+        return err
+    }
+    *m = PriceNumber(i)
+    return nil
 }
